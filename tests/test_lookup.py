@@ -3,6 +3,7 @@ from __future__ import annotations
 import unittest
 from pathlib import Path
 import tempfile
+import pyarrow
 
 from cloud_egress_ip_ranges.builder import build_from_fixtures, write_artifacts
 from cloud_egress_ip_ranges.explain import explain_lookup
