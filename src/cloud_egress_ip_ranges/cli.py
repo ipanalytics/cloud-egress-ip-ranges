@@ -25,6 +25,7 @@ def build_parser() -> argparse.ArgumentParser:
     build.add_argument("--offline-fixtures", action="store_true", help="Build from checked-in fixtures.")
     build.add_argument("--output-dir", default="dist", help="Output directory.")
     build.add_argument("--azure-service-tags-url", default="", help="Azure Service Tags JSON URL for live builds.")
+    build.add_argument("--previous-feed", default="", help="Previous root JSON feed for diff generation.")
     build.set_defaults(func=_build)
 
     lookup = subparsers.add_parser("lookup", help="Return JSON matches for an IP address.")
@@ -62,7 +63,8 @@ def _build(args: argparse.Namespace) -> int:
             if args.offline_fixtures
             else build_from_live_sources(azure_service_tags_url=args.azure_service_tags_url)
         )
-        manifest = write_artifacts(records, Path(args.output_dir), offline=args.offline_fixtures)
+        previous_feed = Path(args.previous_feed) if args.previous_feed else None
+        manifest = write_artifacts(records, Path(args.output_dir), offline=args.offline_fixtures, previous_feed=previous_feed)
     except Exception as exc:
         return _error(str(exc))
     print(json.dumps({"output_dir": args.output_dir, "total_records": manifest["total_records"]}, sort_keys=True))

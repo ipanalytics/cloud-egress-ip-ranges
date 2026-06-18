@@ -21,17 +21,27 @@ The workflow:
 - runs compile, unittest, and lint checks;
 - resolves the current Azure Service Tags JSON URL from Microsoft Download Center;
 - builds live artifacts from AWS, Google, Azure, Oracle, Cloudflare, Fastly, GitHub, GitLab, Atlassian, and Stripe official feeds/docs;
-- publishes stable release assets on the `daily` tag.
+- publishes stable release assets on the `daily` tag;
+- deploys the static GitHub Pages dashboard from `site/`.
 
 Release assets use stable names:
 
 - `cloud-egress-ip-ranges.json`
 - `cloud-egress-ip-ranges.csv`
+- `cloud-egress-ip-ranges.jsonl`
+- `cloud-egress-ip-ranges.parquet`
+- `cloud-egress-ip-ranges.sqlite`
+- `cloud-egress-ip-ranges.duckdb`
 - `manifest.json`
+- `latest.json`
+- `diff-latest.json`
 - `sources.md`
+- `providers.yaml`
+- `egress-capabilities.json`
 - `provider-catalog.json`
 - `provider-catalog.md`
 - `cloud-egress-ip-ranges-classified.tar.gz`
+- `cloud-egress-ip-ranges-integrations.tar.gz`
 
 ## Choosing Classified Lists
 

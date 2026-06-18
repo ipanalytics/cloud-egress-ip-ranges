@@ -10,6 +10,7 @@ REQUIRED = [
     "pyproject.toml",
     "README.md",
     "LICENSE",
+    "providers.yaml",
     "src/cloud_egress_ip_ranges/__init__.py",
     "src/cloud_egress_ip_ranges/__main__.py",
     "src/cloud_egress_ip_ranges/cli.py",
@@ -23,8 +24,11 @@ REQUIRED = [
     "docs/operations.md",
     ".github/workflows/ci.yml",
     ".github/workflows/daily-release.yml",
+    "site/index.html",
+    "site/app.js",
+    "site/style.css",
 ]
-TEXT_SUFFIXES = {".py", ".md", ".toml", ".yml", ".yaml", ".json"}
+TEXT_SUFFIXES = {".py", ".md", ".toml", ".yml", ".yaml", ".json", ".html", ".js", ".css"}
 MARKER_PATTERN = r"\b" + r"\b|\b".join(["TO" + "DO", "FIX" + "ME", "X" * 3]) + r"\b"
 FORBIDDEN = [
     re.compile(MARKER_PATTERN),
@@ -47,7 +51,7 @@ def iter_project_files() -> list[Path]:
         for path in root.rglob("*"):
             if path.is_file() and "__pycache__" not in path.parts and path.suffix in TEXT_SUFFIXES:
                 files.append(path)
-    for rel in ["README.md", "pyproject.toml", "LICENSE"]:
+    for rel in ["README.md", "pyproject.toml", "LICENSE", "providers.yaml"]:
         path = ROOT / rel
         if path.exists():
             files.append(path)

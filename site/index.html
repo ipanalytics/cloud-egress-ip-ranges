@@ -1,0 +1,53 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>cloud-egress-ip-ranges</title>
+    <link rel="stylesheet" href="./style.css">
+  </head>
+  <body>
+    <main>
+      <header>
+        <img src="./banner.svg" alt="cloud-egress-ip-ranges" class="banner">
+        <div class="headline">
+          <h1>cloud-egress-ip-ranges</h1>
+          <p>Daily classified cloud, edge, CI/CD, SaaS webhook, and managed egress IP intelligence.</p>
+        </div>
+      </header>
+
+      <section class="metrics" aria-label="Dataset metrics">
+        <article><span id="records">-</span><label>records</label></article>
+        <article><span id="providers">-</span><label>providers with CIDRs</label></article>
+        <article><span id="sources">-</span><label>live sources</label></article>
+        <article><span id="catalog">-</span><label>catalog entries</label></article>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Provider Coverage</h2>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/tag/daily">Daily release</a>
+        </div>
+        <div id="provider-grid" class="provider-grid"></div>
+      </section>
+
+      <section class="panel">
+        <div class="panel-header">
+          <h2>Release Artifacts</h2>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges">Repository</a>
+        </div>
+        <div class="artifact-grid">
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.json">JSON</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.jsonl">JSONL</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.csv">CSV</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.parquet">Parquet</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.sqlite">SQLite</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.duckdb">DuckDB</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/providers.yaml">providers.yaml</a>
+          <a href="https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges-integrations.tar.gz">Integrations</a>
+        </div>
+      </section>
+    </main>
+    <script src="./app.js"></script>
+  </body>
+</html>

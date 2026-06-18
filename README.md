@@ -93,9 +93,13 @@ The release workflow generates `sources.md` on every build and uses it as the Gi
 - Explicit `confidence`, `false_positive_risk`, and `recommended_action` fields.
 - Deterministic offline builds for repeatable CI and tests.
 - Root JSON and CSV datasets for analytics pipelines.
+- JSONL, Parquet, SQLite, and DuckDB artifacts for data engineering workflows.
 - Classified JSON and TXT lists grouped by provider, platform family, service hint, precision level, and recommended action.
+- NGINX, Cloudflare, Splunk, Elastic, and ClickHouse integration outputs.
+- Public `providers.yaml` registry and `egress-capabilities.json` capability matrix.
+- `latest.json` and `diff/latest.json` for release monitoring.
 - CLI lookup and explanation commands for local investigation.
-- Daily GitHub Actions release workflow with stable asset names.
+- Daily GitHub Actions release workflow with stable asset names and GitHub Pages dashboard.
 - No hosted API or runtime service requirement.
 
 ## Quick Start
@@ -197,11 +201,20 @@ Daily release assets are published on the [`daily`](https://github.com/ipanalyti
 |---|---|
 | `cloud-egress-ip-ranges.json` | Canonical JSON feed with schema version, generation timestamp, and records |
 | `cloud-egress-ip-ranges.csv` | Flat tabular export |
+| `cloud-egress-ip-ranges.jsonl` | One JSON record per line for streaming ingestion |
+| `cloud-egress-ip-ranges.parquet` | Columnar export for warehouse and lakehouse pipelines |
+| `cloud-egress-ip-ranges.sqlite` | SQLite database with indexed `egress_ranges` table |
+| `cloud-egress-ip-ranges.duckdb` | DuckDB database with `egress_ranges` table |
 | `manifest.json` | Counts, source inventory, classified inventory, and SHA256 checksums |
+| `latest.json` | Compact release summary and artifact pointers |
+| `diff-latest.json` | Latest feed diff against the previous daily release when available |
 | `sources.md` | Provider/feed inventory used as the release body |
+| `providers.yaml` | Public provider registry |
+| `egress-capabilities.json` | Provider capability matrix |
 | `provider-catalog.json` | Tiered provider catalog with implementation status and collection method |
 | `provider-catalog.md` | Human-readable provider coverage report |
 | `cloud-egress-ip-ranges-classified.tar.gz` | Classified JSON/TXT lists for direct policy consumption |
+| `cloud-egress-ip-ranges-integrations.tar.gz` | NGINX, Cloudflare, Splunk, Elastic, and ClickHouse outputs |
 
 Classified list layout:
 
@@ -301,6 +314,10 @@ Public cloud IP feeds do not identify the customer workload behind a request. NA
 ├── scripts/
 │   ├── build.py
 │   └── lint.py
+├── site/
+│   ├── index.html
+│   ├── app.js
+│   └── style.css
 ├── src/cloud_egress_ip_ranges/
 │   ├── builder.py
 │   ├── cli.py
@@ -312,6 +329,7 @@ Public cloud IP feeds do not identify the customer workload behind a request. NA
 │   └── sources/
 ├── tests/
 │   └── fixtures/
+├── providers.yaml
 └── dist/
 ```
 
@@ -322,7 +340,7 @@ GitHub Actions is the deployment target for the dataset.
 | Workflow | Trigger | Purpose |
 |---|---|---|
 | `ci.yml` | push, pull request | Compile, test, lint, offline build |
-| `daily-release.yml` | daily cron, manual dispatch | Live build and release asset publication |
+| `daily-release.yml` | daily cron, manual dispatch | Live build, release asset publication, Pages dashboard deploy |
 
 The daily workflow resolves the current Azure Service Tags JSON URL, builds live artifacts, packages classified lists, and publishes stable release assets using the repository `GITHUB_TOKEN` with `contents: write`.
 

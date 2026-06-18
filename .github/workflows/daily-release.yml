@@ -7,6 +7,8 @@ on:
 
 permissions:
   contents: write
+  pages: write
+  id-token: write
 
 jobs:
   build-release:
@@ -30,17 +32,37 @@ jobs:
             | head -n 1)"
           test -n "$url"
           echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Download previous daily feed
+        shell: bash
+        run: |
+          curl -fsSL \
+            -o previous-cloud-egress-ip-ranges.json \
+            'https://github.com/ipanalytics/cloud-egress-ip-ranges/releases/download/daily/cloud-egress-ip-ranges.json' \
+            || rm -f previous-cloud-egress-ip-ranges.json
       - name: Build live artifacts
-        run: uv run --python 3.12 python scripts/build.py --azure-service-tags-url '${{ steps.azure.outputs.url }}'
+        run: uv run --python 3.12 python scripts/build.py --azure-service-tags-url '${{ steps.azure.outputs.url }}' --previous-feed previous-cloud-egress-ip-ranges.json
       - name: Package classified lists
         run: |
           tar -czf cloud-egress-ip-ranges-classified.tar.gz -C dist classified
+          tar -czf cloud-egress-ip-ranges-integrations.tar.gz -C dist integrations
           cp dist/cloud-egress-ip-ranges.json cloud-egress-ip-ranges.json
           cp dist/cloud-egress-ip-ranges.csv cloud-egress-ip-ranges.csv
+          cp dist/cloud-egress-ip-ranges.jsonl cloud-egress-ip-ranges.jsonl
+          cp dist/cloud-egress-ip-ranges.parquet cloud-egress-ip-ranges.parquet
+          cp dist/cloud-egress-ip-ranges.sqlite cloud-egress-ip-ranges.sqlite
+          cp dist/cloud-egress-ip-ranges.duckdb cloud-egress-ip-ranges.duckdb
           cp dist/manifest.json manifest.json
+          cp dist/latest.json latest.json
+          cp dist/diff/latest.json diff-latest.json
           cp dist/sources.md sources.md
+          cp dist/providers.yaml providers.yaml
+          cp dist/egress-capabilities.json egress-capabilities.json
           cp dist/provider-catalog.json provider-catalog.json
           cp dist/provider-catalog.md provider-catalog.md
+          mkdir -p site/data
+          cp dist/latest.json site/data/latest.json
+          cp dist/provider-catalog.json site/data/provider-catalog.json
+          cp dist/sources.md site/data/sources.md
       - name: Publish daily release assets
         uses: softprops/action-gh-release@v2
         with:
@@ -51,8 +73,22 @@ jobs:
           files: |
             cloud-egress-ip-ranges.json
             cloud-egress-ip-ranges.csv
+            cloud-egress-ip-ranges.jsonl
+            cloud-egress-ip-ranges.parquet
+            cloud-egress-ip-ranges.sqlite
+            cloud-egress-ip-ranges.duckdb
             manifest.json
+            latest.json
+            diff-latest.json
             sources.md
+            providers.yaml
+            egress-capabilities.json
             provider-catalog.json
             provider-catalog.md
             cloud-egress-ip-ranges-classified.tar.gz
+            cloud-egress-ip-ranges-integrations.tar.gz
+      - uses: actions/configure-pages@v5
+      - uses: actions/upload-pages-artifact@v3
+        with:
+          path: site
+      - uses: actions/deploy-pages@v4

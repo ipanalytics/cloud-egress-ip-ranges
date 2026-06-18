@@ -6,8 +6,16 @@ Builds write root artifacts and classified lists.
 
 - `dist/cloud-egress-ip-ranges.json`: canonical JSON feed with schema version, generation timestamp, and records.
 - `dist/cloud-egress-ip-ranges.csv`: tabular feed with one row per CIDR.
+- `dist/cloud-egress-ip-ranges.jsonl`: one JSON record per line.
+- `dist/cloud-egress-ip-ranges.parquet`: columnar feed for analytics engines.
+- `dist/cloud-egress-ip-ranges.sqlite`: SQLite database with indexed `egress_ranges` table.
+- `dist/cloud-egress-ip-ranges.duckdb`: DuckDB database with `egress_ranges` table.
 - `dist/manifest.json`: counts, source inventory, classified list inventory, and SHA256 checksums.
+- `dist/latest.json`: compact release summary and stable artifact pointers.
+- `dist/diff/latest.json`: added/removed range keys relative to a previous feed when provided.
 - `dist/sources.md`: generated provider/feed inventory used as the daily release body.
+- `dist/providers.yaml`: public provider registry.
+- `dist/egress-capabilities.json`: provider capability matrix.
 - `dist/provider-catalog.json`: tiered provider catalog with collection method and implementation status.
 - `dist/provider-catalog.md`: human-readable provider coverage report.
 
@@ -39,3 +47,11 @@ Examples:
 - `dist/classified/recommended_action/rate-limit-or-challenge.txt`
 
 Use `manifest.json` to discover the complete inventory, inspect `provider_catalog_coverage`, and verify checksums.
+
+## Integration Outputs
+
+- `dist/integrations/nginx/geo.conf`: NGINX `geo` map keyed by CIDR.
+- `dist/integrations/cloudflare/ip-list.txt`: plain CIDR list suitable for Cloudflare list imports.
+- `dist/integrations/splunk/cloud_egress_lookup.csv`: Splunk lookup CSV.
+- `dist/integrations/elastic/bulk.ndjson`: Elasticsearch/OpenSearch bulk NDJSON.
+- `dist/integrations/clickhouse/cloud_egress_ip_ranges.sql`: ClickHouse DDL and insert statements.
