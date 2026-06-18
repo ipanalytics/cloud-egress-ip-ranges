@@ -83,7 +83,13 @@ def fetch_ripe_stat_asn_records(specs: tuple[AsnProviderSpec, ...] = ASN_PROVIDE
     records: list[EgressRangeRecord] = []
     for spec in specs:
         for asn in spec.asns:
-            records.extend(parse_ripe_stat_announced_prefixes(RIPESTAT_ANNOUNCED_PREFIXES_URL.format(asn=asn), spec, asn))
+            try:
+                records.extend(
+                    parse_ripe_stat_announced_prefixes(RIPESTAT_ANNOUNCED_PREFIXES_URL.format(asn=asn), spec, asn)
+                )
+            except ValueError as exc:
+                if "no prefixes" not in str(exc):
+                    raise
     return records
 
 

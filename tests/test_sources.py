@@ -4,7 +4,11 @@ from pathlib import Path
 import unittest
 
 from cloud_egress_ip_ranges.sources.aws import parse_aws_ip_ranges
-from cloud_egress_ip_ranges.sources.asn_bgp import ASN_PROVIDER_SPECS, parse_ripe_stat_announced_prefixes
+from cloud_egress_ip_ranges.sources.asn_bgp import (
+    ASN_PROVIDER_SPECS,
+    fetch_ripe_stat_asn_records,
+    parse_ripe_stat_announced_prefixes,
+)
 from cloud_egress_ip_ranges.sources.azure import parse_azure_service_tags
 from cloud_egress_ip_ranges.sources.atlassian import parse_atlassian_ip_ranges
 from cloud_egress_ip_ranges.sources.cloudflare import parse_cloudflare_api, parse_cloudflare_text
@@ -112,6 +116,18 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(records[0].source_type, "asn_bgp")
         self.assertEqual(records[0].precision_level, "L5")
         self.assertIn("AS", records[0].network_border_group)
+
+    def test_ripe_stat_fetch_skips_empty_asn_results(self) -> None:
+        empty = FIXTURES / "ripe-announced-prefixes-empty.json"
+        spec = ASN_PROVIDER_SPECS[0]
+        try:
+            import cloud_egress_ip_ranges.sources.asn_bgp as asn_bgp
+
+            original = asn_bgp.RIPESTAT_ANNOUNCED_PREFIXES_URL
+            asn_bgp.RIPESTAT_ANNOUNCED_PREFIXES_URL = str(empty)
+            self.assertEqual(fetch_ripe_stat_asn_records((spec,)), [])
+        finally:
+            asn_bgp.RIPESTAT_ANNOUNCED_PREFIXES_URL = original
 
     def test_platform_metadata_has_no_fake_cidrs(self) -> None:
         metadata = platform_metadata()
