@@ -1,0 +1,8 @@
+{
+  "success": true,
+  "result": {
+    "ipv4_cidrs": ["172.64.0.0/13"],
+    "ipv6_cidrs": ["2a06:98c0::/29"]
+  }
+}
+

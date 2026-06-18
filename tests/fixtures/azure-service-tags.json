@@ -1,0 +1,27 @@
+{
+  "changeNumber": 345,
+  "cloud": "Public",
+  "values": [
+    {
+      "name": "AzureCloud.westeurope",
+      "id": "AzureCloud.WestEurope",
+      "properties": {
+        "region": "westeurope",
+        "platform": "Azure",
+        "systemService": "",
+        "addressPrefixes": ["20.50.0.0/16", "2603:1020:206::/48"]
+      }
+    },
+    {
+      "name": "AppService.GermanyWestCentral",
+      "id": "AppService.GermanyWestCentral",
+      "properties": {
+        "region": "germanywestcentral",
+        "platform": "Azure",
+        "systemService": "AzureAppService",
+        "addressPrefixes": ["51.116.0.0/16"]
+      }
+    }
+  ]
+}
+

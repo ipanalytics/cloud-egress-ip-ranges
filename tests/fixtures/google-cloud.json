@@ -1,0 +1,15 @@
+{
+  "syncToken": "1749830400",
+  "creationTime": "2026-06-13T00:00:00.000000",
+  "prefixes": [
+    {
+      "ipv4Prefix": "34.141.0.0/16",
+      "scope": "europe-west3"
+    },
+    {
+      "ipv6Prefix": "2600:1900:4000::/44",
+      "scope": "us-central1"
+    }
+  ]
+}
+

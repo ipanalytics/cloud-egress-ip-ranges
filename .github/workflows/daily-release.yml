@@ -1,0 +1,52 @@
+name: Daily release
+
+on:
+  schedule:
+    - cron: "17 3 * * *"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build-release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v5
+      - name: Compile
+        run: uv run --python 3.12 python -m compileall src tests scripts
+      - name: Test
+        run: uv run --python 3.12 python -m unittest discover -s tests
+      - name: Lint
+        run: uv run --python 3.12 python scripts/lint.py
+      - name: Resolve Azure Service Tags URL
+        id: azure
+        shell: bash
+        run: |
+          set -euo pipefail
+          url="$(curl -fsSL 'https://www.microsoft.com/en-us/download/confirmation.aspx?id=56519' \
+            | grep -Eo 'https://download\.microsoft\.com/download/[^"]+ServiceTags_Public_[0-9]+\.json' \
+            | head -n 1)"
+          test -n "$url"
+          echo "url=$url" >> "$GITHUB_OUTPUT"
+      - name: Build live artifacts
+        run: uv run --python 3.12 python scripts/build.py --azure-service-tags-url '${{ steps.azure.outputs.url }}'
+      - name: Package classified lists
+        run: |
+          tar -czf cloud-egress-ip-ranges-classified.tar.gz -C dist classified
+          cp dist/cloud-egress-ip-ranges.json cloud-egress-ip-ranges.json
+          cp dist/cloud-egress-ip-ranges.csv cloud-egress-ip-ranges.csv
+          cp dist/manifest.json manifest.json
+      - name: Publish daily release assets
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: daily
+          name: Daily cloud egress IP ranges
+          make_latest: true
+          files: |
+            cloud-egress-ip-ranges.json
+            cloud-egress-ip-ranges.csv
+            manifest.json
+            cloud-egress-ip-ranges-classified.tar.gz
+
