@@ -20,7 +20,7 @@ The workflow:
 - installs `uv`;
 - runs compile, unittest, and lint checks;
 - resolves the current Azure Service Tags JSON URL from Microsoft Download Center;
-- builds live artifacts from AWS, Google, Azure, and Cloudflare official feeds;
+- builds live artifacts from AWS, Google, Azure, Oracle, Cloudflare, Fastly, GitHub, GitLab, Atlassian, and Stripe official feeds/docs;
 - publishes stable release assets on the `daily` tag.
 
 Release assets use stable names:
@@ -28,6 +28,9 @@ Release assets use stable names:
 - `cloud-egress-ip-ranges.json`
 - `cloud-egress-ip-ranges.csv`
 - `manifest.json`
+- `sources.md`
+- `provider-catalog.json`
+- `provider-catalog.md`
 - `cloud-egress-ip-ranges-classified.tar.gz`
 
 ## Choosing Classified Lists
@@ -53,4 +56,3 @@ uv run --python 3.12 python scripts/build.py --azure-service-tags-url "$AZURE_SE
 ```
 
 No local GitHub CLI authentication is required for builds. GitHub release publishing uses the standard `GITHUB_TOKEN` available inside GitHub Actions with `contents: write` permission.
-

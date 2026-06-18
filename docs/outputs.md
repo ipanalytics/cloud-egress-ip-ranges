@@ -7,6 +7,9 @@ Builds write root artifacts and classified lists.
 - `dist/cloud-egress-ip-ranges.json`: canonical JSON feed with schema version, generation timestamp, and records.
 - `dist/cloud-egress-ip-ranges.csv`: tabular feed with one row per CIDR.
 - `dist/manifest.json`: counts, source inventory, classified list inventory, and SHA256 checksums.
+- `dist/sources.md`: generated provider/feed inventory used as the daily release body.
+- `dist/provider-catalog.json`: tiered provider catalog with collection method and implementation status.
+- `dist/provider-catalog.md`: human-readable provider coverage report.
 
 ## Classified Lists
 
@@ -35,5 +38,4 @@ Examples:
 - `dist/classified/precision_level/l2.txt`
 - `dist/classified/recommended_action/rate-limit-or-challenge.txt`
 
-Use `manifest.json` to discover the complete inventory and verify checksums.
-
+Use `manifest.json` to discover the complete inventory, inspect `provider_catalog_coverage`, and verify checksums.

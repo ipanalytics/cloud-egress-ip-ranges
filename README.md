@@ -42,7 +42,8 @@ official feeds / fixtures
         |
         v
 provider parsers
-  AWS, Google, Azure, Cloudflare
+  AWS, Google, Azure, Oracle, Cloudflare,
+  Fastly, GitHub, GitLab, Atlassian, Stripe
         |
         v
 normalized records
@@ -61,7 +62,7 @@ The builder has two execution modes:
 | Mode | Purpose | Sources |
 |---|---|---|
 | Offline fixtures | CI, deterministic tests, local development | `tests/fixtures/` |
-| Live build | Daily release artifacts | AWS, Google, Azure, Cloudflare official feeds |
+| Live build | Daily release artifacts | AWS, Google, Azure, Oracle, Cloudflare, Fastly, GitHub, GitLab, Atlassian, and Stripe official feeds/docs |
 
 ## Live Source Inventory
 
@@ -73,12 +74,21 @@ The release workflow generates `sources.md` on every build and uses it as the Gi
 | Google Cloud | Google Cloud `cloud.json` | `google_cloud_json` | customer external IP ranges |
 | Google | Google `goog.json` | `google_goog_json` | Google-owned provider ranges |
 | Azure | Azure Public Service Tags JSON | `azure_service_tags_public_json` | service-tag and regional ranges |
-| Cloudflare | Cloudflare IPv4 ranges | `cloudflare_ips` | edge network ranges |
-| Cloudflare | Cloudflare IPv6 ranges | `cloudflare_ips` | edge network ranges |
+| Oracle Cloud | Oracle OCI public IP ranges | `oracle_public_ip_ranges_json` | regional public cloud ranges |
+| Cloudflare | Cloudflare IPv4 ranges | `cloudflare_ips_v4` | edge network ranges |
+| Cloudflare | Cloudflare IPv6 ranges | `cloudflare_ips_v6` | edge network ranges |
+| Fastly | Fastly public IP list | `fastly_public_ip_list` | edge/CDN and Compute possible ranges |
+| GitHub | GitHub Meta API | `github_meta_api` | Actions, hooks, pages, API, git, and web ranges |
+| GitLab | GitLab.com IP range docs | `gitlab_com_docs` | Web/API and webhook source ranges |
+| Atlassian | Atlassian Cloud IP ranges | `atlassian_ip_ranges_json` | Atlassian Cloud egress ranges |
+| Stripe | Stripe webhook IPs | `stripe_webhook_ips_json` | webhook source IPs |
+| Stripe | Stripe API IPs | `stripe_api_ips_json` | API source IPs |
+
+`provider-catalog.md` is generated beside the feed. It tracks all modeled provider tiers, including providers that are cataloged for ASN/BGP, docs scraping, customer-specific egress, or capability-only handling but are not emitted as CIDRs until a defensible source is implemented.
 
 ## Features
 
-- Official feed ingestion for AWS, Google, Azure, and Cloudflare.
+- Official feed ingestion for AWS, Google, Azure, Oracle, Cloudflare, Fastly, GitHub, GitLab, Atlassian, and Stripe.
 - Conservative classification model with `L0` through `L5` precision levels.
 - Explicit `confidence`, `false_positive_risk`, and `recommended_action` fields.
 - Deterministic offline builds for repeatable CI and tests.
@@ -153,7 +163,7 @@ uv run --python 3.12 python -m cloud_egress_ip_ranges lookup 1.1.1.1
       "recommended_action": "challenge",
       "serverless_possible": true,
       "serverless_exact": false,
-      "source": "cloudflare_ips",
+      "source": "cloudflare_ips_v4",
       "source_type": "official_feed",
       "precision_level": "L0"
     }
@@ -169,7 +179,7 @@ uv run --python 3.12 python -m cloud_egress_ip_ranges explain 1.1.1.1
 
 ```text
 1.1.1.1: 1 matching range(s)
-- 1.1.1.0/24 provider=cloudflare service=cloudflare_edge confidence=91 false_positive_risk=29 action=challenge; serverless possible, edge possible; exact serverless attribution is not claimed from this source. Source: cloudflare_ips (official_feed).
+- 1.1.1.0/24 provider=cloudflare service=cloudflare_edge confidence=91 false_positive_risk=29 action=challenge; serverless possible, edge possible; exact serverless attribution is not claimed from this source. Source: cloudflare_ips_v4 (official_feed).
 ```
 
 ### Inspect Feed Statistics
@@ -189,6 +199,8 @@ Daily release assets are published on the [`daily`](https://github.com/ipanalyti
 | `cloud-egress-ip-ranges.csv` | Flat tabular export |
 | `manifest.json` | Counts, source inventory, classified inventory, and SHA256 checksums |
 | `sources.md` | Provider/feed inventory used as the release body |
+| `provider-catalog.json` | Tiered provider catalog with implementation status and collection method |
+| `provider-catalog.md` | Human-readable provider coverage report |
 | `cloud-egress-ip-ranges-classified.tar.gz` | Classified JSON/TXT lists for direct policy consumption |
 
 Classified list layout:
@@ -248,7 +260,7 @@ See [docs/schema.md](docs/schema.md), [docs/confidence.md](docs/confidence.md), 
 - Treat `recommended_action` as a policy hint, not a hard block decision.
 - Prefer classified TXT lists for WAF, rate-limit, and enrichment pipelines that only need CIDRs.
 - Use JSON records when provenance, confidence, and false-positive risk matter.
-- Monitor `manifest.json` checksums and source counts across releases.
+- Monitor `manifest.json` checksums, source counts, and `provider_catalog_coverage` across releases.
 - Keep owner-confirmed ranges separate from broad official provider feeds.
 - For live local builds, pass the current Azure Service Tags JSON URL:
 
@@ -296,6 +308,7 @@ Public cloud IP feeds do not identify the customer workload behind a request. NA
 │   ├── feed.py
 │   ├── lookup.py
 │   ├── models.py
+│   ├── provider_catalog.py
 │   └── sources/
 ├── tests/
 │   └── fixtures/

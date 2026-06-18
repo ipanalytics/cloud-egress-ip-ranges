@@ -6,7 +6,15 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from cloud_egress_ip_ranges.builder import ROOT_CSV, ROOT_JSON, SOURCES_MARKDOWN, build_from_fixtures, write_artifacts
+from cloud_egress_ip_ranges.builder import (
+    PROVIDER_CATALOG_JSON,
+    PROVIDER_CATALOG_MARKDOWN,
+    ROOT_CSV,
+    ROOT_JSON,
+    SOURCES_MARKDOWN,
+    build_from_fixtures,
+    write_artifacts,
+)
 from cloud_egress_ip_ranges.sources.aws import parse_aws_ip_ranges
 
 
@@ -19,10 +27,13 @@ class BuilderTests(unittest.TestCase):
             self.assertTrue((output / ROOT_CSV).exists())
             self.assertTrue((output / "manifest.json").exists())
             self.assertTrue((output / SOURCES_MARKDOWN).exists())
+            self.assertTrue((output / PROVIDER_CATALOG_JSON).exists())
+            self.assertTrue((output / PROVIDER_CATALOG_MARKDOWN).exists())
             self.assertTrue((output / "classified" / "provider" / "aws.json").exists())
             self.assertGreater(manifest["total_records"], 0)
             self.assertGreater(len(manifest["classified"]), 0)
             self.assertGreater(len(manifest["source_catalog"]), 0)
+            self.assertGreater(manifest["provider_catalog_coverage"]["catalog_providers"], 100)
 
     def test_json_and_csv_counts_match(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -66,6 +77,16 @@ class BuilderTests(unittest.TestCase):
             self.assertIn("Google Cloud cloud.json", text)
             self.assertIn("Azure Public Service Tags JSON", text)
             self.assertIn("Cloudflare IPv4 ranges", text)
+
+    def test_provider_catalog_markdown_reports_unimplemented_providers(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            manifest = write_artifacts(build_from_fixtures(), output, offline=True)
+            text = (output / PROVIDER_CATALOG_MARKDOWN).read_text(encoding="utf-8")
+            self.assertIn("hetzner", text)
+            self.assertIn("asn_bgp", text)
+            self.assertIn("Providers not in the CIDR feed yet", text)
+            self.assertIn("hetzner", manifest["provider_catalog_coverage"]["not_in_cidr_feed"])
 
 
 if __name__ == "__main__":

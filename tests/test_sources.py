@@ -5,10 +5,16 @@ import unittest
 
 from cloud_egress_ip_ranges.sources.aws import parse_aws_ip_ranges
 from cloud_egress_ip_ranges.sources.azure import parse_azure_service_tags
+from cloud_egress_ip_ranges.sources.atlassian import parse_atlassian_ip_ranges
 from cloud_egress_ip_ranges.sources.cloudflare import parse_cloudflare_api, parse_cloudflare_text
 from cloud_egress_ip_ranges.sources.common import build_request
+from cloud_egress_ip_ranges.sources.fastly import parse_fastly_public_ip_list
+from cloud_egress_ip_ranges.sources.github import parse_github_meta
+from cloud_egress_ip_ranges.sources.gitlab import parse_gitlab_com_docs
 from cloud_egress_ip_ranges.sources.google import parse_google_ranges
+from cloud_egress_ip_ranges.sources.oracle import parse_oracle_public_ip_ranges
 from cloud_egress_ip_ranges.sources.platforms import platform_metadata
+from cloud_egress_ip_ranges.sources.stripe import parse_stripe_ips
 
 FIXTURES = Path(__file__).parent / "fixtures"
 
@@ -50,6 +56,49 @@ class SourceParserTests(unittest.TestCase):
         self.assertEqual(len(api_records), 2)
         self.assertTrue(all(record.edge_possible for record in text_records + api_records))
         self.assertTrue(all(record.provider == "cloudflare" for record in text_records + api_records))
+
+    def test_oracle_parser(self) -> None:
+        records = parse_oracle_public_ip_ranges(FIXTURES / "oracle-public-ip-ranges.json")
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0].provider, "oracle_cloud")
+        self.assertEqual(records[0].region, "eu-frankfurt-1")
+        self.assertIn("OCI", records[0].service_hint)
+
+    def test_fastly_parser(self) -> None:
+        records = parse_fastly_public_ip_list(FIXTURES / "fastly-public-ip-list.json")
+        self.assertEqual(len(records), 3)
+        self.assertTrue(all(record.provider == "fastly" for record in records))
+        self.assertTrue(all(record.edge_possible for record in records))
+
+    def test_github_parser(self) -> None:
+        records = parse_github_meta(FIXTURES / "github-meta.json")
+        services = {record.service_hint for record in records}
+        self.assertIn("github_actions", services)
+        self.assertIn("github_hooks", services)
+        self.assertIn("github_pages", services)
+
+    def test_gitlab_docs_parser(self) -> None:
+        records = parse_gitlab_com_docs(FIXTURES / "gitlab-com.html")
+        self.assertEqual({record.cidr for record in records}, {"34.74.90.64/28", "34.74.226.0/24"})
+        self.assertTrue(all(record.source_type == "official_docs" for record in records))
+
+    def test_atlassian_parser_filters_egress_ranges(self) -> None:
+        records = parse_atlassian_ip_ranges(FIXTURES / "atlassian-ip-ranges.json")
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0].provider, "atlassian")
+        self.assertEqual(records[0].source, "atlassian_ip_ranges_json")
+        self.assertTrue(all(record.source_type == "official_feed" for record in records))
+
+    def test_stripe_parser_normalizes_ips_to_cidr(self) -> None:
+        records = parse_stripe_ips(
+            FIXTURES / "stripe-webhook-ips.json",
+            group="WEBHOOKS",
+            source_label="stripe_webhook_ips_json",
+        )
+        self.assertEqual(len(records), 2)
+        self.assertEqual(records[0].provider, "stripe")
+        self.assertEqual(records[0].cidr, "3.18.12.63/32")
+        self.assertEqual(records[0].service_hint, "stripe_webhooks")
 
     def test_platform_metadata_has_no_fake_cidrs(self) -> None:
         metadata = platform_metadata()

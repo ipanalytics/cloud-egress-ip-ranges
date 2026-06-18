@@ -45,8 +45,8 @@ class CliTests(unittest.TestCase):
         stats = run_cli("stats")
         self.assertEqual(sources.returncode, 0, sources.stderr)
         self.assertEqual(stats.returncode, 0, stats.stderr)
-        self.assertIn("cloudflare_ips", sources.stdout)
-        self.assertEqual(json.loads(stats.stdout)["classified_lists"], 22)
+        self.assertIn("cloudflare_ips_v4", sources.stdout)
+        self.assertGreaterEqual(json.loads(stats.stdout)["classified_lists"], 40)
 
     def test_invalid_ip_is_nonzero(self) -> None:
         result = run_cli("lookup", "not-an-ip")
@@ -61,4 +61,3 @@ class CliTests(unittest.TestCase):
 
 if __name__ == "__main__":
     unittest.main()
-

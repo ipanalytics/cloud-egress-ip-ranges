@@ -1,0 +1,19 @@
+{
+  "last_updated_timestamp": "2026-05-25T08:40:08.970229",
+  "regions": [
+    {
+      "region": "eu-frankfurt-1",
+      "cidrs": [
+        {
+          "cidr": "40.233.0.0/19",
+          "tags": ["OCI"]
+        },
+        {
+          "cidr": "2603:c020::/36",
+          "tags": ["OCI", "OSN"]
+        }
+      ]
+    }
+  ]
+}
+
