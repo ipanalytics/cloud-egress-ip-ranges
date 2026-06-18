@@ -38,15 +38,17 @@ jobs:
           cp dist/cloud-egress-ip-ranges.json cloud-egress-ip-ranges.json
           cp dist/cloud-egress-ip-ranges.csv cloud-egress-ip-ranges.csv
           cp dist/manifest.json manifest.json
+          cp dist/sources.md sources.md
       - name: Publish daily release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: daily
           name: Daily cloud egress IP ranges
           make_latest: true
+          body_path: sources.md
           files: |
             cloud-egress-ip-ranges.json
             cloud-egress-ip-ranges.csv
             manifest.json
+            sources.md
             cloud-egress-ip-ranges-classified.tar.gz
-

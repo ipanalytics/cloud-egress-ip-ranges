@@ -23,6 +23,57 @@ CLOUDFLARE_V6_URL = "https://www.cloudflare.com/ips-v6"
 ROOT_JSON = "cloud-egress-ip-ranges.json"
 ROOT_CSV = "cloud-egress-ip-ranges.csv"
 MANIFEST = "manifest.json"
+SOURCES_MARKDOWN = "sources.md"
+SOURCE_CATALOG = [
+    {
+        "provider": "aws",
+        "feed": "AWS ip-ranges.json",
+        "source_id": "aws_ip_ranges_json",
+        "url": AWS_URL,
+        "classification": "cloud and AWS service ranges",
+        "live": True,
+    },
+    {
+        "provider": "google_cloud",
+        "feed": "Google Cloud cloud.json",
+        "source_id": "google_cloud_json",
+        "url": GOOGLE_CLOUD_URL,
+        "classification": "Google Cloud customer external IP ranges",
+        "live": True,
+    },
+    {
+        "provider": "google",
+        "feed": "Google goog.json",
+        "source_id": "google_goog_json",
+        "url": GOOGLE_GOOG_URL,
+        "classification": "Google-owned provider ranges",
+        "live": True,
+    },
+    {
+        "provider": "azure",
+        "feed": "Azure Public Service Tags JSON",
+        "source_id": "azure_service_tags_public_json",
+        "url": "resolved daily from Microsoft Download Center",
+        "classification": "Azure service-tag and regional ranges",
+        "live": True,
+    },
+    {
+        "provider": "cloudflare",
+        "feed": "Cloudflare IPv4 ranges",
+        "source_id": "cloudflare_ips",
+        "url": CLOUDFLARE_V4_URL,
+        "classification": "Cloudflare edge network ranges",
+        "live": True,
+    },
+    {
+        "provider": "cloudflare",
+        "feed": "Cloudflare IPv6 ranges",
+        "source_id": "cloudflare_ips",
+        "url": CLOUDFLARE_V6_URL,
+        "classification": "Cloudflare edge network ranges",
+        "live": True,
+    },
+]
 CSV_FIELDS = [
     "cidr",
     "provider",
@@ -106,6 +157,7 @@ def write_artifacts(records: list[EgressRangeRecord], output_dir: Path, *, offli
     write_json(output_dir / ROOT_JSON, {"schema_version": SCHEMA_VERSION, "generated_at": timestamp, "records": data})
     write_csv(output_dir / ROOT_CSV, data)
     classified = write_classified(classified_dir, data)
+    write_sources_markdown(output_dir / SOURCES_MARKDOWN, data, timestamp)
 
     manifest = build_manifest(output_dir, data, classified, timestamp)
     write_json(output_dir / MANIFEST, manifest)
@@ -163,6 +215,7 @@ def build_manifest(output_dir: Path, data: list[dict], classified: list[dict], t
     checksums = {
         ROOT_JSON: sha256_file(output_dir / ROOT_JSON),
         ROOT_CSV: sha256_file(output_dir / ROOT_CSV),
+        SOURCES_MARKDOWN: sha256_file(output_dir / SOURCES_MARKDOWN),
     }
     for item in classified:
         checksums[item["json"]] = sha256_file(output_dir / item["json"])
@@ -173,9 +226,53 @@ def build_manifest(output_dir: Path, data: list[dict], classified: list[dict], t
         "total_records": len(data),
         "provider_counts": dict(sorted(providers.items())),
         "source_counts": dict(sorted(sources.items())),
+        "source_catalog": SOURCE_CATALOG,
         "classified": classified,
         "checksums": dict(sorted(checksums.items())),
     }
+
+
+def write_sources_markdown(path: Path, data: list[dict], timestamp: str) -> None:
+    provider_counts = Counter(row["provider"] for row in data)
+    source_counts = Counter(row["source"] for row in data)
+    lines = [
+        "# cloud-egress-ip-ranges source inventory",
+        "",
+        f"Generated: `{timestamp}`",
+        "",
+        "| Provider | Feed | Source ID | Records | URL | Classification |",
+        "|---|---|---:|---:|---|---|",
+    ]
+    for source in SOURCE_CATALOG:
+        lines.append(
+            "| {provider} | {feed} | `{source_id}` | {records} | {url} | {classification} |".format(
+                provider=source["provider"],
+                feed=source["feed"],
+                source_id=source["source_id"],
+                records=source_counts.get(source["source_id"], 0),
+                url=source["url"],
+                classification=source["classification"],
+            )
+        )
+    lines.extend(
+        [
+            "",
+            "## Provider totals",
+            "",
+            "| Provider | Records |",
+            "|---|---:|",
+        ]
+    )
+    for provider, count in sorted(provider_counts.items()):
+        lines.append(f"| {provider} | {count} |")
+    lines.extend(
+        [
+            "",
+            "The inventory is generated from the same records as the JSON, CSV, and classified list artifacts.",
+            "",
+        ]
+    )
+    path.write_text("\n".join(lines), encoding="utf-8")
 
 
 def sha256_file(path: Path) -> str:

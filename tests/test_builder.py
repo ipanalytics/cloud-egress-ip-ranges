@@ -6,7 +6,7 @@ from pathlib import Path
 import tempfile
 import unittest
 
-from cloud_egress_ip_ranges.builder import ROOT_CSV, ROOT_JSON, build_from_fixtures, write_artifacts
+from cloud_egress_ip_ranges.builder import ROOT_CSV, ROOT_JSON, SOURCES_MARKDOWN, build_from_fixtures, write_artifacts
 from cloud_egress_ip_ranges.sources.aws import parse_aws_ip_ranges
 
 
@@ -18,9 +18,11 @@ class BuilderTests(unittest.TestCase):
             self.assertTrue((output / ROOT_JSON).exists())
             self.assertTrue((output / ROOT_CSV).exists())
             self.assertTrue((output / "manifest.json").exists())
+            self.assertTrue((output / SOURCES_MARKDOWN).exists())
             self.assertTrue((output / "classified" / "provider" / "aws.json").exists())
             self.assertGreater(manifest["total_records"], 0)
             self.assertGreater(len(manifest["classified"]), 0)
+            self.assertGreater(len(manifest["source_catalog"]), 0)
 
     def test_json_and_csv_counts_match(self) -> None:
         with tempfile.TemporaryDirectory() as temp:
@@ -54,6 +56,16 @@ class BuilderTests(unittest.TestCase):
             bad.write_text('{"prefixes": []}', encoding="utf-8")
             with self.assertRaisesRegex(ValueError, "aws_ip_ranges_json"):
                 parse_aws_ip_ranges(bad)
+
+    def test_sources_markdown_contains_provider_inventory(self) -> None:
+        with tempfile.TemporaryDirectory() as temp:
+            output = Path(temp)
+            write_artifacts(build_from_fixtures(), output, offline=True)
+            text = (output / SOURCES_MARKDOWN).read_text(encoding="utf-8")
+            self.assertIn("AWS ip-ranges.json", text)
+            self.assertIn("Google Cloud cloud.json", text)
+            self.assertIn("Azure Public Service Tags JSON", text)
+            self.assertIn("Cloudflare IPv4 ranges", text)
 
 
 if __name__ == "__main__":

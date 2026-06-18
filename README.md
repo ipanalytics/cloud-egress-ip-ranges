@@ -63,6 +63,19 @@ The builder has two execution modes:
 | Offline fixtures | CI, deterministic tests, local development | `tests/fixtures/` |
 | Live build | Daily release artifacts | AWS, Google, Azure, Cloudflare official feeds |
 
+## Live Source Inventory
+
+The release workflow generates `sources.md` on every build and uses it as the GitHub release body. The same inventory is also embedded in `manifest.json` under `source_catalog`.
+
+| Provider | Feed | Source ID | Classification |
+|---|---|---|---|
+| AWS | AWS `ip-ranges.json` | `aws_ip_ranges_json` | cloud and AWS service ranges |
+| Google Cloud | Google Cloud `cloud.json` | `google_cloud_json` | customer external IP ranges |
+| Google | Google `goog.json` | `google_goog_json` | Google-owned provider ranges |
+| Azure | Azure Public Service Tags JSON | `azure_service_tags_public_json` | service-tag and regional ranges |
+| Cloudflare | Cloudflare IPv4 ranges | `cloudflare_ips` | edge network ranges |
+| Cloudflare | Cloudflare IPv6 ranges | `cloudflare_ips` | edge network ranges |
+
 ## Features
 
 - Official feed ingestion for AWS, Google, Azure, and Cloudflare.
@@ -175,6 +188,7 @@ Daily release assets are published on the [`daily`](https://github.com/ipanalyti
 | `cloud-egress-ip-ranges.json` | Canonical JSON feed with schema version, generation timestamp, and records |
 | `cloud-egress-ip-ranges.csv` | Flat tabular export |
 | `manifest.json` | Counts, source inventory, classified inventory, and SHA256 checksums |
+| `sources.md` | Provider/feed inventory used as the release body |
 | `cloud-egress-ip-ranges-classified.tar.gz` | Classified JSON/TXT lists for direct policy consumption |
 
 Classified list layout:
@@ -315,4 +329,3 @@ MIT. See [LICENSE](LICENSE).
 ## Disclaimer
 
 This dataset is for infrastructure, security, analytics, and research workflows. Validate enforcement decisions against your own traffic, tolerance for false positives, and applicable operational requirements.
-
